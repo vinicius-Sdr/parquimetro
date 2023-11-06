@@ -1,0 +1,3 @@
+FROM openjdk:17
+COPY target/paquimetro-1.0.0.jar paquimetro.jar
+ENTRYPOINT ["java", "-jar", "/paquimetro.jar"]
