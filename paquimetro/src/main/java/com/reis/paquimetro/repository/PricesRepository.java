@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PricesRepository extends JpaRepository<Price, Long> {
+
+    Price findByIsCurrentValue(Boolean isCurrentValue);
+
 }

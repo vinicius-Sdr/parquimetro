@@ -2,18 +2,23 @@ package com.reis.paquimetro.model.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
-public class ServiceOrderDTO {
+
+@Getter
+@Setter
+public class ServiceOrderOpenDTO {
 
     @NotBlank(message = "Obrigatório identificar se é tempo fixo ou não. O campo obrigatório e não pode estar em branco")
     private Boolean isFixedTime;
 
     @NotBlank(message = "Horário de inicio é um campo obrigatório e não pode estar em branco")
-    private Date startTime;
+    private LocalDateTime startTime;
 
-    private Date endTime;
+    private LocalDateTime endTime;
 
     private Double paidValue;
 

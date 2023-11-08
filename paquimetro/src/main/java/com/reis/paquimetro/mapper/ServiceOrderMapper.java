@@ -1,6 +1,6 @@
 package com.reis.paquimetro.mapper;
 
-import com.reis.paquimetro.model.DTO.ServiceOrderDTO;
+import com.reis.paquimetro.model.DTO.ServiceOrderOpenDTO;
 import com.reis.paquimetro.model.ServiceOrder;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 @Mapper(componentModel="spring", unmappedTargetPolicy = ReportingPolicy.WARN)
 public interface ServiceOrderMapper {
 
-    ServiceOrder dtoToEntity(ServiceOrderDTO serviceOrderDTO);
+    ServiceOrder dtoToEntity(ServiceOrderOpenDTO serviceOrderOpenDTO);
 
 }
