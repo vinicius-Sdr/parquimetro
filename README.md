@@ -1,4 +1,5 @@
 Parquimetro
+
 Api para gerenciamento de consumo de eletrico nas residencias, de acordo com o número de pessoas que residêm na casa e também o cadastramento dos eletrodomesticos.
 
 ﻿
