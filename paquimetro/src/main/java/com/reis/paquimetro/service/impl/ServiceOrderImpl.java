@@ -13,15 +13,14 @@ import com.reis.paquimetro.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-
+@Service
 public class ServiceOrderImpl implements ServiceOrderService {
 
-    @Autowired
-    private ServiceOrderMapper mapper;
 
     @Autowired
     private UserService userService;
@@ -35,35 +34,37 @@ public class ServiceOrderImpl implements ServiceOrderService {
     @Override
     public ResponseEntity createServiceOrder(ServiceOrderOpenDTO serviceOrderOpenDTO) {
         User user = userService.findById(serviceOrderOpenDTO.getUserId());
-        ServiceOrder serviceOrder = serviceOrderRepository.findByUserAndAndIsOpen(user, true);
+        if (user != null) {
+            ServiceOrder serviceOrder = serviceOrderRepository.findByUserAndIsOpenTrue(user);
+            if (serviceOrder == null) {
+                Price price = pricesService.findCurrentPrice();
+                    serviceOrder = new ServiceOrder();
+                if (serviceOrderOpenDTO.getIsFixedTime() == true) {
 
-        if(serviceOrder == null) {
-            Price price = pricesService.findCurrentPrice();
+                    serviceOrder.setUser(user);
 
-            if (serviceOrderOpenDTO.getIsFixedTime() == true) {
+                    Long timeToBePaid = ChronoUnit.HOURS.between(serviceOrderOpenDTO.getStartTime(), serviceOrderOpenDTO.getEndTime()) + 1;
+                    serviceOrder.setPaidValue(timeToBePaid * price.getPrice());
+                    serviceOrder.setStartTime(serviceOrderOpenDTO.getStartTime());
+                    serviceOrder.setEndTime(serviceOrderOpenDTO.getEndTime());
+                    serviceOrder.setIsFixedTime(true);
+                    serviceOrder.setIsOpen(false);
+                } else {
+                    serviceOrder.setPrice(price);
+                    serviceOrder.setUser(user);
+                    serviceOrder.setPaidValue(pricesService.findCurrentPrice().getPrice());
+                    serviceOrder.setStartTime(LocalDateTime.now());
+                    serviceOrder.setIsFixedTime(false);
+                    serviceOrder.setIsOpen(true);
 
-                serviceOrder.setUser(user);
+                }
 
-                Long timeToBePaid = ChronoUnit.HOURS.between(serviceOrderOpenDTO.getStartTime(), serviceOrderOpenDTO.getEndTime());
-                serviceOrder.setPaidValue(timeToBePaid * price.getPrice());
-                serviceOrder.setStartTime(serviceOrderOpenDTO.getStartTime());
-                serviceOrder.setEndTime(serviceOrderOpenDTO.getEndTime());
-                serviceOrder.setIsFixedTime(true);
-                serviceOrder.setIsOpen(false);
+                return ResponseEntity.status(HttpStatus.CREATED).body(serviceOrderRepository.save(serviceOrder));
             } else {
-                serviceOrder.setPrice(price);
-                serviceOrder.setUser(user);
-                serviceOrder.setPaidValue(pricesService.findCurrentPrice().getPrice());
-                serviceOrder.setStartTime(serviceOrderOpenDTO.getStartTime());
-                serviceOrder.setIsFixedTime(false);
-                serviceOrder.setIsOpen(true);
-
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("O usuário já tem um ticket aberto! Ele deve primeiro encerrar o ticket já existente");
             }
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(serviceOrderRepository.save(serviceOrder));
-        }else{
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("O usuário já tem um ticket aberto! Ele deve primeiro encerrar o ticket já existente");
         }
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Usuario não encontrado");
     }
 
     @Override
@@ -72,16 +73,17 @@ public class ServiceOrderImpl implements ServiceOrderService {
         return ResponseEntity.ok().body(serviceOrderRepository.findAllByUser(user));
     }
 
-    @Override
-    public ServiceOrder findServiceOrderById(Long id) {
-        return serviceOrderRepository.findById(id).get();
-    }
 
     @Override
     public ResponseEntity deleteServiceOrder(Long id) {
         if (serviceOrderRepository.findById(id).isPresent()) {
-            serviceOrderRepository.deleteById(id);
-            return ResponseEntity.status(HttpStatus.OK).body("Ordem de serviço deletada com sucesso!");
+            ServiceOrder serviceOrder = serviceOrderRepository.findById(id).get();
+            if(serviceOrder.getIsOpen() != true) {
+                serviceOrderRepository.deleteById(id);
+                return ResponseEntity.status(HttpStatus.OK).body("");
+            }else{
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("O ticket só pode ser deletado quando o pagamento for efetuado");
+            }
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
@@ -89,7 +91,7 @@ public class ServiceOrderImpl implements ServiceOrderService {
     @Override
     public ResponseEntity editServiceOrder(Long userId, ServiceOrderCloseDTO serviceOrderCloseDTO) {
         ServiceOrder serviceOrder = findOpenServiceByUser(userId);
-    if(serviceOrder == null) {
+    if(serviceOrder != null) {
         if (serviceOrderCloseDTO.getIsOpen().equals(false)) {
             Price price = pricesService.findCurrentPrice();
 
@@ -109,6 +111,6 @@ public class ServiceOrderImpl implements ServiceOrderService {
     @Override
     public ServiceOrder findOpenServiceByUser(Long userId) {
         User user = userService.findById(userId);
-        return serviceOrderRepository.findByUserAndAndIsOpen(user, true);
+        return serviceOrderRepository.findByUserAndIsOpenTrue(user);
     }
 }

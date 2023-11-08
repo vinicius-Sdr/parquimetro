@@ -7,16 +7,13 @@ import com.reis.paquimetro.model.ServiceOrder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-@Service
+
 public interface ServiceOrderService {
 
 
     ResponseEntity createServiceOrder(ServiceOrderOpenDTO vehicleDTO);
 
-    ResponseEntity getAllServiceOrderByUser(Long userId);
-
-    ServiceOrder findServiceOrderById(Long id);
-
+    ResponseEntity getAllServiceOrderByUser(Long id);
     ResponseEntity deleteServiceOrder(Long id);
 
     ResponseEntity editServiceOrder(Long id, ServiceOrderCloseDTO serviceOrderCloseDTO);

@@ -23,13 +23,12 @@ public class ServiceOrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity getServiceOrderByUserId(@PathVariable(name = "id") @NotBlank Long id) {
-        return ResponseEntity.ok().body(serviceOrderService.findServiceOrderById(id));
+        return ResponseEntity.ok().body(serviceOrderService.getAllServiceOrderByUser(id));
 
     }
 
     @PutMapping("/{id}")
     public ResponseEntity editServiceOrder(@PathVariable(name = "id") @NotBlank Long id, @Valid @RequestBody ServiceOrderCloseDTO serviceOrderCloseDTO) {
-
         return serviceOrderService.editServiceOrder(id, serviceOrderCloseDTO);
     }
 

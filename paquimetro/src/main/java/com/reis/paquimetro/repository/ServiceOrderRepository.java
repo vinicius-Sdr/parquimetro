@@ -13,7 +13,7 @@ public interface ServiceOrderRepository extends JpaRepository<ServiceOrder, Long
 
     List<ServiceOrder> findAllByUser(User user);
 
-    ServiceOrder findByUserAndAndIsOpen(User user, Boolean isOpen);
+    ServiceOrder findByUserAndIsOpenTrue(User user);
 
 
 }
